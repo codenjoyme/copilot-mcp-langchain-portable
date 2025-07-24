@@ -54,3 +54,29 @@ mkdir -p "$GIT_DIR"
 rm git-portable.7z.exe
 
 echo "Git installation completed!"
+
+# -----------------------------------------------------
+# Download and install Python
+echo "Downloading Python embeddable..."
+if command -v curl &> /dev/null; then
+    curl -L -o python-embed.zip "$PYTHON_URL"
+elif command -v wget &> /dev/null; then
+    wget -O python-embed.zip "$PYTHON_URL"
+else
+    echo "Error: Neither curl nor wget found. Please install one of them."
+    exit 1
+fi
+
+echo "Extracting Python to $PYTHON_DIR..."
+mkdir -p "$PYTHON_DIR"
+if command -v unzip &> /dev/null; then
+    unzip -q python-embed.zip -d "$PYTHON_DIR"
+else
+    echo "Error: unzip command not found. Please install unzip."
+    exit 1
+fi
+
+# Cleanup
+rm python-embed.zip
+
+echo "Python installation completed!"

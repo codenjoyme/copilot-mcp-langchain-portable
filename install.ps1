@@ -37,3 +37,17 @@ Start-Process -FilePath "git-portable.7z.exe" -ArgumentList "-o$GIT_DIR", "-y" -
 Remove-Item "git-portable.7z.exe"
 
 Write-Host "Git installation completed!" -ForegroundColor Green
+
+# -----------------------------------------------------
+# Download and install Python
+Write-Host "Downloading Python embeddable..." -ForegroundColor Yellow
+Invoke-WebRequest -Uri $PYTHON_URL -OutFile "python-embed.zip"
+
+Write-Host "Extracting Python to $PYTHON_DIR..." -ForegroundColor Yellow
+New-Item -ItemType Directory -Force -Path $PYTHON_DIR | Out-Null
+Expand-Archive -Path "python-embed.zip" -DestinationPath $PYTHON_DIR -Force
+
+# Cleanup
+Remove-Item "python-embed.zip"
+
+Write-Host "Python installation completed!" -ForegroundColor Green
