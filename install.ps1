@@ -51,3 +51,18 @@ Expand-Archive -Path "python-embed.zip" -DestinationPath $PYTHON_DIR -Force
 Remove-Item "python-embed.zip"
 
 Write-Host "Python installation completed!" -ForegroundColor Green
+
+# -----------------------------------------------------
+# Setup pip for embeddable Python
+Write-Host "Setting up pip for Python..." -ForegroundColor Yellow
+
+# Download get-pip.py
+Invoke-WebRequest -Uri $GET_PIP_URL -OutFile "get-pip.py"
+
+# Install pip
+& ".\$PYTHON_DIR\python.exe" "get-pip.py"
+
+# Cleanup
+Remove-Item "get-pip.py"
+
+Write-Host "Pip setup completed!" -ForegroundColor Green

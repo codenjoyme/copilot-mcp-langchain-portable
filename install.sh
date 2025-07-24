@@ -80,3 +80,25 @@ fi
 rm python-embed.zip
 
 echo "Python installation completed!"
+
+# -----------------------------------------------------
+# Setup pip for embeddable Python
+echo "Setting up pip for Python..."
+
+# Download get-pip.py
+if command -v curl &> /dev/null; then
+    curl -L -o get-pip.py "$GET_PIP_URL"
+elif command -v wget &> /dev/null; then
+    wget -O get-pip.py "$GET_PIP_URL"
+else
+    echo "Error: Neither curl nor wget found. Please install one of them."
+    exit 1
+fi
+
+# Install pip
+./"$PYTHON_DIR"/python.exe get-pip.py
+
+# Cleanup
+rm get-pip.py
+
+echo "Pip setup completed!"
