@@ -3,6 +3,9 @@
 # Load environment variables
 source .env
 
+# Ensure the VSCode user data directory exists
+mkdir -p "$VSCODE_USER_DATA_DIR"
+
 # Clear screen for better visibility
 clear
 
@@ -246,7 +249,7 @@ else
 #!/bin/bash
 # VSCode launcher with portable tools
 export PATH="$currentDir/$GIT_DIR/bin:$currentDir/$PYTHON_DIR:$currentDir/$PYTHON_DIR/Scripts:$PATH"
-"$currentDir/$VSCODE_DIR/Code.exe" "$currentDir/$PROJECT_DIR"
+"$currentDir/$VSCODE_DIR/Code.exe" --user-data-dir="$currentDir/$VSCODE_USER_DATA_DIR" "$currentDir/$PROJECT_DIR"
 EOF
 
     chmod +x launch-vscode.sh

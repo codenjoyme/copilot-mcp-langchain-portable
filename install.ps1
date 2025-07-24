@@ -1,8 +1,14 @@
 # Load environment variables from .env file
-Get-Content ".env" | ForEach-Object {
+$envVars = Get-Content ".env" | ForEach-Object {
     if ($_ -match "^([^=]+)=(.*)$") {
-        Set-Variable -Name $matches[1] -Value $matches[2]
+        @{Name = $matches[1]; Value = $matches[2]}
     }
+}
+$envVars | ForEach-Object { Set-Variable -Name $_.Name -Value $_.Value }
+
+# Ensure the VSCode user data directory exists
+if (!(Test-Path $VSCODE_USER_DATA_DIR)) {
+    New-Item -ItemType Directory -Force -Path $VSCODE_USER_DATA_DIR | Out-Null
 }
 
 # Clear screen for better visibility
@@ -196,8 +202,8 @@ if (Test-Path "launch-vscode.bat") {
     $launcherContent = @"
 @echo off
 REM VSCode launcher with portable tools
-set PATH=$currentDir\$($GIT_DIR)\bin;$currentDir\$($PYTHON_DIR);$currentDir\$($PYTHON_DIR)\Scripts;%PATH%
-start "" "$currentDir\$($VSCODE_DIR)\Code.exe" "$currentDir\$($PROJECT_DIR)"
+set PATH=$currentDir\$GIT_DIR\bin;$currentDir\$PYTHON_DIR;$currentDir\$PYTHON_DIR\Scripts;%PATH%
+"$currentDir\$VSCODE_DIR\Code.exe" --user-data-dir="$currentDir\$VSCODE_USER_DATA_DIR" "$currentDir\$PROJECT_DIR"
 "@
     Set-Content -Path "launch-vscode.bat" -Value $launcherContent
 
