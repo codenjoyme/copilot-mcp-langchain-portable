@@ -10,97 +10,112 @@ mkdir -p tools
 
 # -----------------------------------------------------
 # Download and install VSCode
-echo "Downloading VSCode..."
-if command -v curl &> /dev/null; then
-    curl -L -o vscode.zip "$VSCODE_URL"
-elif command -v wget &> /dev/null; then
-    wget -O vscode.zip "$VSCODE_URL"
+if [ -f "$VSCODE_DIR/Code.exe" ]; then
+    echo "VSCode already installed, skipping..."
 else
-    echo "Error: Neither curl nor wget found. Please install one of them."
-    exit 1
+    echo "Downloading VSCode..."
+    if command -v curl &> /dev/null; then
+        curl -L -o vscode.zip "$VSCODE_URL"
+    elif command -v wget &> /dev/null; then
+        wget -O vscode.zip "$VSCODE_URL"
+    else
+        echo "Error: Neither curl nor wget found. Please install one of them."
+        exit 1
+    fi
+
+    echo "Extracting VSCode to $VSCODE_DIR..."
+    mkdir -p "$VSCODE_DIR"
+    if command -v unzip &> /dev/null; then
+        unzip -q vscode.zip -d "$VSCODE_DIR"
+    else
+        echo "Error: unzip command not found. Please install unzip."
+        exit 1
+    fi
+
+    # Cleanup
+    rm vscode.zip
+
+    echo "VSCode installation completed!"
 fi
-
-echo "Extracting VSCode to $VSCODE_DIR..."
-mkdir -p "$VSCODE_DIR"
-if command -v unzip &> /dev/null; then
-    unzip -q vscode.zip -d "$VSCODE_DIR"
-else
-    echo "Error: unzip command not found. Please install unzip."
-    exit 1
-fi
-
-# Cleanup
-rm vscode.zip
-
-echo "VSCode installation completed!"
 
 # -----------------------------------------------------
 # Download and install Git
-echo "Downloading Portable Git..."
-if command -v curl &> /dev/null; then
-    curl -L -o git-portable.7z.exe "$GIT_URL"
-elif command -v wget &> /dev/null; then
-    wget -O git-portable.7z.exe "$GIT_URL"
+if [ -f "$GIT_DIR/bin/git.exe" ]; then
+    echo "Git already installed, skipping..."
 else
-    echo "Error: Neither curl nor wget found. Please install one of them."
-    exit 1
+    echo "Downloading Portable Git..."
+    if command -v curl &> /dev/null; then
+        curl -L -o git-portable.7z.exe "$GIT_URL"
+    elif command -v wget &> /dev/null; then
+        wget -O git-portable.7z.exe "$GIT_URL"
+    else
+        echo "Error: Neither curl nor wget found. Please install one of them."
+        exit 1
+    fi
+
+    echo "Extracting Git to $GIT_DIR..."
+    mkdir -p "$GIT_DIR"
+    ./git-portable.7z.exe -o"$GIT_DIR" -y
+
+    # Cleanup
+    rm git-portable.7z.exe
+
+    echo "Git installation completed!"
 fi
-
-echo "Extracting Git to $GIT_DIR..."
-mkdir -p "$GIT_DIR"
-./git-portable.7z.exe -o"$GIT_DIR" -y
-
-# Cleanup
-rm git-portable.7z.exe
-
-echo "Git installation completed!"
 
 # -----------------------------------------------------
 # Download and install Python
-echo "Downloading Python embeddable..."
-if command -v curl &> /dev/null; then
-    curl -L -o python-embed.zip "$PYTHON_URL"
-elif command -v wget &> /dev/null; then
-    wget -O python-embed.zip "$PYTHON_URL"
+if [ -f "$PYTHON_DIR/python.exe" ]; then
+    echo "Python already installed, skipping..."
 else
-    echo "Error: Neither curl nor wget found. Please install one of them."
-    exit 1
+    echo "Downloading Python embeddable..."
+    if command -v curl &> /dev/null; then
+        curl -L -o python-embed.zip "$PYTHON_URL"
+    elif command -v wget &> /dev/null; then
+        wget -O python-embed.zip "$PYTHON_URL"
+    else
+        echo "Error: Neither curl nor wget found. Please install one of them."
+        exit 1
+    fi
+
+    echo "Extracting Python to $PYTHON_DIR..."
+    mkdir -p "$PYTHON_DIR"
+    if command -v unzip &> /dev/null; then
+        unzip -q python-embed.zip -d "$PYTHON_DIR"
+    else
+        echo "Error: unzip command not found. Please install unzip."
+        exit 1
+    fi
+
+    # Cleanup
+    rm python-embed.zip
+
+    echo "Python installation completed!"
 fi
-
-echo "Extracting Python to $PYTHON_DIR..."
-mkdir -p "$PYTHON_DIR"
-if command -v unzip &> /dev/null; then
-    unzip -q python-embed.zip -d "$PYTHON_DIR"
-else
-    echo "Error: unzip command not found. Please install unzip."
-    exit 1
-fi
-
-# Cleanup
-rm python-embed.zip
-
-echo "Python installation completed!"
 
 # -----------------------------------------------------
 # Setup pip for embeddable Python
-echo "Setting up pip for Python..."
-
-# Download get-pip.py
-if command -v curl &> /dev/null; then
-    curl -L -o get-pip.py "$GET_PIP_URL"
-elif command -v wget &> /dev/null; then
-    wget -O get-pip.py "$GET_PIP_URL"
+if [ -f "$PYTHON_DIR/Scripts/pip.exe" ]; then
+    echo "Pip already installed, skipping..."
 else
-    echo "Error: Neither curl nor wget found. Please install one of them."
-    exit 1
-fi
+    echo "Setting up pip for Python..."
 
-# Install pip
-./"$PYTHON_DIR"/python.exe get-pip.py
+    # Download get-pip.py
+    if command -v curl &> /dev/null; then
+        curl -L -o get-pip.py "$GET_PIP_URL"
+    elif command -v wget &> /dev/null; then
+        wget -O get-pip.py "$GET_PIP_URL"
+    else
+        echo "Error: Neither curl nor wget found. Please install one of them."
+        exit 1
+    fi
 
-# Fix Python paths configuration
-pythonPthFile="$PYTHON_DIR/python313._pth"
-cat > "$pythonPthFile" << EOF
+    # Install pip
+    ./"$PYTHON_DIR"/python.exe get-pip.py
+
+    # Fix Python paths configuration
+    pythonPthFile="$PYTHON_DIR/python313._pth"
+    cat > "$pythonPthFile" << EOF
 python313.zip
 .
 Lib\site-packages
@@ -110,51 +125,64 @@ Scripts
 import site
 EOF
 
-# Cleanup
-rm get-pip.py
+    # Cleanup
+    rm get-pip.py
 
-echo "Pip setup completed!"
+    echo "Pip setup completed!"
+fi
 
 # -----------------------------------------------------
 # Clone project repository
-echo "Cloning project repository..."
+if [ -d "$PROJECT_DIR/.git" ]; then
+    echo "Project already cloned, skipping..."
+else
+    echo "Cloning project repository..."
 
-# Clone the project using portable Git
-./"$GIT_DIR"/bin/git.exe clone "$PROJECT_REPO" "$PROJECT_DIR"
+    # Clone the project using portable Git
+    ./"$GIT_DIR"/bin/git.exe clone "$PROJECT_REPO" "$PROJECT_DIR"
 
-echo "Project cloning completed!"
+    echo "Project cloning completed!"
+fi
 
 # -----------------------------------------------------
 # Run project installation script
-echo "Setting up project environment..."
+if [ -d "$PROJECT_DIR/venv" ]; then
+    echo "Project environment already set up, skipping..."
+else
+    echo "Setting up project environment..."
 
-# Navigate to project directory and run install.sh
-cd "$PROJECT_DIR"
+    # Navigate to project directory and run install.sh
+    cd "$PROJECT_DIR"
 
-# Set up environment with our portable tools
-export PATH="../$GIT_DIR/bin:../$PYTHON_DIR:../$PYTHON_DIR/Scripts:$PATH"
+    # Set up environment with our portable tools
+    export PATH="../$GIT_DIR/bin:../$PYTHON_DIR:../$PYTHON_DIR/Scripts:$PATH"
 
-# Run install.sh using bash
-bash ./install.sh
+    # Run install.sh using bash
+    bash ./install.sh
 
-# Return to original directory
-cd ..
+    # Return to original directory
+    cd ..
 
-echo "Project environment setup completed!"
+    echo "Project environment setup completed!"
+fi
 
 # -----------------------------------------------------
 # Create VSCode launcher with portable tools
-echo "Creating VSCode launcher..."
+if [ -f "launch-vscode.bat" ]; then
+    echo "VSCode launcher already exists, skipping..."
+else
+    echo "Creating VSCode launcher..."
 
-currentDir=$(pwd | sed 's|^/c/|C:/|' | tr '/' '\\')
-cat > launch-vscode.bat << EOF
+    currentDir=$(pwd | sed 's|^/c/|C:/|' | tr '/' '\\')
+    cat > launch-vscode.bat << EOF
 @echo off
 REM VSCode launcher with portable tools
 set PATH=$currentDir\\$GIT_DIR\\bin;$currentDir\\$PYTHON_DIR;$currentDir\\$PYTHON_DIR\\Scripts;%PATH%
 start "" "$currentDir\\$VSCODE_DIR\\Code.exe" "$currentDir\\$PROJECT_DIR"
 EOF
 
-echo "VSCode launcher created!"
+    echo "VSCode launcher created!"
+fi
 echo ""
 echo "Setup completed!"
 echo "To start coding, run: ./launch-vscode.bat"

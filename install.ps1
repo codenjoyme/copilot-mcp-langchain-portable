@@ -12,59 +12,74 @@ New-Item -ItemType Directory -Force -Path "tools" | Out-Null
 
 # -----------------------------------------------------
 # Download and install VSCode
-Write-Host "Downloading VSCode..." -ForegroundColor Yellow
-Invoke-WebRequest -Uri $VSCODE_URL -OutFile "vscode.zip"
+if (Test-Path "$VSCODE_DIR\Code.exe") {
+    Write-Host "VSCode already installed, skipping..." -ForegroundColor Cyan
+} else {
+    Write-Host "Downloading VSCode..." -ForegroundColor Yellow
+    Invoke-WebRequest -Uri $VSCODE_URL -OutFile "vscode.zip"
 
-Write-Host "Extracting VSCode to $VSCODE_DIR..." -ForegroundColor Yellow
-New-Item -ItemType Directory -Force -Path $VSCODE_DIR | Out-Null
-Expand-Archive -Path "vscode.zip" -DestinationPath $VSCODE_DIR -Force
+    Write-Host "Extracting VSCode to $VSCODE_DIR..." -ForegroundColor Yellow
+    New-Item -ItemType Directory -Force -Path $VSCODE_DIR | Out-Null
+    Expand-Archive -Path "vscode.zip" -DestinationPath $VSCODE_DIR -Force
 
-# Cleanup
-Remove-Item "vscode.zip"
+    # Cleanup
+    Remove-Item "vscode.zip"
 
-Write-Host "VSCode installation completed!" -ForegroundColor Green
+    Write-Host "VSCode installation completed!" -ForegroundColor Green
+}
 
 # -----------------------------------------------------
 # Download and install Git
-Write-Host "Downloading Portable Git..." -ForegroundColor Yellow
-Invoke-WebRequest -Uri $GIT_URL -OutFile "git-portable.7z.exe"
+if (Test-Path "$GIT_DIR\bin\git.exe") {
+    Write-Host "Git already installed, skipping..." -ForegroundColor Cyan
+} else {
+    Write-Host "Downloading Portable Git..." -ForegroundColor Yellow
+    Invoke-WebRequest -Uri $GIT_URL -OutFile "git-portable.7z.exe"
 
-Write-Host "Extracting Git to $GIT_DIR..." -ForegroundColor Yellow
-New-Item -ItemType Directory -Force -Path $GIT_DIR | Out-Null
-Start-Process -FilePath "git-portable.7z.exe" -ArgumentList "-o$GIT_DIR", "-y" -Wait
+    Write-Host "Extracting Git to $GIT_DIR..." -ForegroundColor Yellow
+    New-Item -ItemType Directory -Force -Path $GIT_DIR | Out-Null
+    Start-Process -FilePath "git-portable.7z.exe" -ArgumentList "-o$GIT_DIR", "-y" -Wait
 
-# Cleanup
-Remove-Item "git-portable.7z.exe"
+    # Cleanup
+    Remove-Item "git-portable.7z.exe"
 
-Write-Host "Git installation completed!" -ForegroundColor Green
+    Write-Host "Git installation completed!" -ForegroundColor Green
+}
 
 # -----------------------------------------------------
 # Download and install Python
-Write-Host "Downloading Python embeddable..." -ForegroundColor Yellow
-Invoke-WebRequest -Uri $PYTHON_URL -OutFile "python-embed.zip"
+if (Test-Path "$PYTHON_DIR\python.exe") {
+    Write-Host "Python already installed, skipping..." -ForegroundColor Cyan
+} else {
+    Write-Host "Downloading Python embeddable..." -ForegroundColor Yellow
+    Invoke-WebRequest -Uri $PYTHON_URL -OutFile "python-embed.zip"
 
-Write-Host "Extracting Python to $PYTHON_DIR..." -ForegroundColor Yellow
-New-Item -ItemType Directory -Force -Path $PYTHON_DIR | Out-Null
-Expand-Archive -Path "python-embed.zip" -DestinationPath $PYTHON_DIR -Force
+    Write-Host "Extracting Python to $PYTHON_DIR..." -ForegroundColor Yellow
+    New-Item -ItemType Directory -Force -Path $PYTHON_DIR | Out-Null
+    Expand-Archive -Path "python-embed.zip" -DestinationPath $PYTHON_DIR -Force
 
-# Cleanup
-Remove-Item "python-embed.zip"
+    # Cleanup
+    Remove-Item "python-embed.zip"
 
-Write-Host "Python installation completed!" -ForegroundColor Green
+    Write-Host "Python installation completed!" -ForegroundColor Green
+}
 
 # -----------------------------------------------------
 # Setup pip for embeddable Python
-Write-Host "Setting up pip for Python..." -ForegroundColor Yellow
+if (Test-Path "$PYTHON_DIR\Scripts\pip.exe") {
+    Write-Host "Pip already installed, skipping..." -ForegroundColor Cyan
+} else {
+    Write-Host "Setting up pip for Python..." -ForegroundColor Yellow
 
-# Download get-pip.py
-Invoke-WebRequest -Uri $GET_PIP_URL -OutFile "get-pip.py"
+    # Download get-pip.py
+    Invoke-WebRequest -Uri $GET_PIP_URL -OutFile "get-pip.py"
 
-# Install pip
-& ".\$PYTHON_DIR\python.exe" "get-pip.py"
+    # Install pip
+    & ".\$PYTHON_DIR\python.exe" "get-pip.py"
 
-# Fix Python paths configuration
-$pythonPthFile = "$PYTHON_DIR\python313._pth"
-$newContent = @"
+    # Fix Python paths configuration
+    $pythonPthFile = "$PYTHON_DIR\python313._pth"
+    $newContent = @"
 python313.zip
 .
 Lib\site-packages
@@ -73,55 +88,68 @@ Scripts
 # Uncomment to run site.main() automatically
 import site
 "@
-Set-Content -Path $pythonPthFile -Value $newContent
+    Set-Content -Path $pythonPthFile -Value $newContent
 
-# Cleanup
-Remove-Item "get-pip.py"
+    # Cleanup
+    Remove-Item "get-pip.py"
 
-Write-Host "Pip setup completed!" -ForegroundColor Green
+    Write-Host "Pip setup completed!" -ForegroundColor Green
+}
 
 # -----------------------------------------------------
 # Clone project repository
-Write-Host "Cloning project repository..." -ForegroundColor Yellow
+if (Test-Path "$PROJECT_DIR\.git") {
+    Write-Host "Project already cloned, skipping..." -ForegroundColor Cyan
+} else {
+    Write-Host "Cloning project repository..." -ForegroundColor Yellow
 
-# Set up Git environment
-$env:PATH = ".\$GIT_DIR\bin;$env:PATH"
+    # Set up Git environment
+    $env:PATH = ".\$GIT_DIR\bin;$env:PATH"
 
-# Clone the project
-& ".\$GIT_DIR\bin\git.exe" clone $PROJECT_REPO $PROJECT_DIR
+    # Clone the project
+    & ".\$GIT_DIR\bin\git.exe" clone $PROJECT_REPO $PROJECT_DIR
 
-Write-Host "Project cloning completed!" -ForegroundColor Green
+    Write-Host "Project cloning completed!" -ForegroundColor Green
+}
 
 # -----------------------------------------------------
 # Run project installation script
-Write-Host "Setting up project environment..." -ForegroundColor Yellow
+if (Test-Path "$PROJECT_DIR\venv") {
+    Write-Host "Project environment already set up, skipping..." -ForegroundColor Cyan
+} else {
+    Write-Host "Setting up project environment..." -ForegroundColor Yellow
 
-# Navigate to project directory and run install.sh
-Push-Location $PROJECT_DIR
+    # Navigate to project directory and run install.sh
+    Push-Location $PROJECT_DIR
 
-# Run install.sh using our portable tools
-$env:PATH = "..\$GIT_DIR\bin;..\$PYTHON_DIR;..\$PYTHON_DIR\Scripts;$env:PATH"
-& "..\$GIT_DIR\bin\bash.exe" "./install.sh"
+    # Run install.sh using our portable tools
+    $env:PATH = "..\$GIT_DIR\bin;..\$PYTHON_DIR;..\$PYTHON_DIR\Scripts;$env:PATH"
+    & "..\$GIT_DIR\bin\bash.exe" "./install.sh"
 
-# Return to original directory
-Pop-Location
+    # Return to original directory
+    Pop-Location
 
-Write-Host "Project environment setup completed!" -ForegroundColor Green
+    Write-Host "Project environment setup completed!" -ForegroundColor Green
+}
 
 # -----------------------------------------------------
 # Create VSCode launcher with portable tools
-Write-Host "Creating VSCode launcher..." -ForegroundColor Yellow
+if (Test-Path "launch-vscode.bat") {
+    Write-Host "VSCode launcher already exists, skipping..." -ForegroundColor Cyan
+} else {
+    Write-Host "Creating VSCode launcher..." -ForegroundColor Yellow
 
-$currentDir = (Get-Location).Path -replace '/', '\'
-$launcherContent = @"
+    $currentDir = (Get-Location).Path -replace '/', '\'
+    $launcherContent = @"
 @echo off
 REM VSCode launcher with portable tools
 set PATH=$currentDir\$GIT_DIR\bin;$currentDir\$PYTHON_DIR;$currentDir\$PYTHON_DIR\Scripts;%PATH%
 start "" "$currentDir\$VSCODE_DIR\Code.exe" "$currentDir\$PROJECT_DIR"
 "@
-Set-Content -Path "launch-vscode.bat" -Value $launcherContent
+    Set-Content -Path "launch-vscode.bat" -Value $launcherContent
 
-Write-Host "VSCode launcher created!" -ForegroundColor Green
+    Write-Host "VSCode launcher created!" -ForegroundColor Green
+}
 Write-Host ""
 Write-Host "Setup completed!" -ForegroundColor Cyan
 Write-Host "To start coding, run: .\launch-vscode.bat" -ForegroundColor White
