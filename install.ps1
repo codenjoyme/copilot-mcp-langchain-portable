@@ -153,7 +153,19 @@ if (Test-Path "$PROJECT_DIR\.git") {
 Write-Host ""
 
 # ═══════════════════════════════════════════════════════════════
-# STEP 7: Project Environment Setup
+# STEP 7: Replace workspaceFolder in `.cursor/mcp.json`
+# ═══════════════════════════════════════════════════════════════
+$workspaceFolder = (Get-Location).Path -replace '\\', '\\'
+if (Test-Path "$PROJECT_DIR\.cursor\mcp.json") {
+    Write-Host "Replacing '{workspaceFolder}' in '.cursor/mcp.json'..." -ForegroundColor Yellow
+    (Get-Content "$PROJECT_DIR\.cursor\mcp.json") -replace "{workspaceFolder}", $workspaceFolder | Set-Content "$PROJECT_DIR\.cursor\mcp.json"
+    Write-Host "Replacement completed!" -ForegroundColor Green
+} else {
+    Write-Host "'.cursor\mcp.json' not found! Skipping replacement." -ForegroundColor Red
+}
+
+# ═══════════════════════════════════════════════════════════════
+# STEP 8: Project Environment Setup
 # ═══════════════════════════════════════════════════════════════
 if (Test-Path "$PROJECT_DIR\.virtualenv") {
     Write-Host "Project environment already set up, skipping..." -ForegroundColor Cyan
@@ -173,7 +185,7 @@ if (Test-Path "$PROJECT_DIR\.virtualenv") {
 Write-Host ""
 
 # ═══════════════════════════════════════════════════════════════
-# STEP 8: VSCode Launcher Creation
+# STEP 9: VSCode Launcher Creation
 # ═══════════════════════════════════════════════════════════════
 if (Test-Path "launch-vscode.bat") {
     Write-Host "VSCode launcher already exists, skipping..." -ForegroundColor Cyan
@@ -208,6 +220,7 @@ Write-Host "   - Python with LangChain" -ForegroundColor Gray
 Write-Host "   - Hello-LangChain project" -ForegroundColor Gray
 Write-Host ""
 Write-Host "Happy coding!" -ForegroundColor Magenta
+Write-Host ""
 
 # =====================================================================
 # RUNNUNG THE VSCODE LAUNCHER

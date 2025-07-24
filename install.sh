@@ -196,7 +196,20 @@ fi
 echo ""
 
 # ═══════════════════════════════════════════════════════════════
-# STEP 7: Project Environment Setup
+# STEP 7: Replace workspaceFolder in `.cursor/mcp.json`
+# ═══════════════════════════════════════════════════════════════
+workspace_folder=$(pwd | sed 's|\\|/|g')
+if [ -f "$PROJECT_DIR/.cursor/mcp.json" ]; then
+    echo -e "${YELLOW}Replacing '{workspaceFolder}' in .cursor/mcp.json...${NC}"
+    sed -i "s|{workspaceFolder}|$workspace_folder|g" "$PROJECT_DIR/.cursor/mcp.json"
+    sed -i "s|\\\\\\\\|/|g" "$PROJECT_DIR/.cursor/mcp.json"
+    echo -e "${GREEN}Replacement completed!${NC}"
+else
+    echo -e "${RED}.cursor/mcp.json not found! Skipping replacement.${NC}"
+fi
+
+# ═══════════════════════════════════════════════════════════════
+# STEP 8: Project Environment Setup
 # ═══════════════════════════════════════════════════════════════
 if [ -d "$PROJECT_DIR/.virtualenv" ]; then
     echo -e "${CYAN}Project environment already set up, skipping...${NC}"
@@ -220,7 +233,7 @@ fi
 echo ""
 
 # ═══════════════════════════════════════════════════════════════
-# STEP 8: VSCode Launcher Creation
+# STEP 9: VSCode Launcher Creation
 # ═══════════════════════════════════════════════════════════════
 if [ -f "launch-vscode.sh" ]; then
     echo -e "${CYAN}VSCode launcher already exists, skipping...${NC}"
@@ -257,6 +270,7 @@ echo -e "${GRAY}   - Python with LangChain${NC}"
 echo -e "${GRAY}   - Hello-LangChain project${NC}"
 echo ""
 echo -e "${MAGENTA}Happy coding!${NC}"
+echo ""
 
 # ════════════════════════════════════════════════════════════════
 # Running the VSCode launcher
