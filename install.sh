@@ -8,6 +8,7 @@ echo "Starting installation process..."
 # Create tools directory
 mkdir -p tools
 
+# -----------------------------------------------------
 # Download and install VSCode
 echo "Downloading VSCode..."
 if command -v curl &> /dev/null; then
@@ -32,3 +33,24 @@ fi
 rm vscode.zip
 
 echo "VSCode installation completed!"
+
+# -----------------------------------------------------
+# Download and install Git
+echo "Downloading Portable Git..."
+if command -v curl &> /dev/null; then
+    curl -L -o git-portable.7z.exe "$GIT_URL"
+elif command -v wget &> /dev/null; then
+    wget -O git-portable.7z.exe "$GIT_URL"
+else
+    echo "Error: Neither curl nor wget found. Please install one of them."
+    exit 1
+fi
+
+echo "Extracting Git to $GIT_DIR..."
+mkdir -p "$GIT_DIR"
+./git-portable.7z.exe -o"$GIT_DIR" -y
+
+# Cleanup
+rm git-portable.7z.exe
+
+echo "Git installation completed!"

@@ -10,6 +10,7 @@ Write-Host "Starting installation process..." -ForegroundColor Green
 # Create tools directory
 New-Item -ItemType Directory -Force -Path "tools" | Out-Null
 
+# -----------------------------------------------------
 # Download and install VSCode
 Write-Host "Downloading VSCode..." -ForegroundColor Yellow
 Invoke-WebRequest -Uri $VSCODE_URL -OutFile "vscode.zip"
@@ -22,3 +23,17 @@ Expand-Archive -Path "vscode.zip" -DestinationPath $VSCODE_DIR -Force
 Remove-Item "vscode.zip"
 
 Write-Host "VSCode installation completed!" -ForegroundColor Green
+
+# -----------------------------------------------------
+# Download and install Git
+Write-Host "Downloading Portable Git..." -ForegroundColor Yellow
+Invoke-WebRequest -Uri $GIT_URL -OutFile "git-portable.7z.exe"
+
+Write-Host "Extracting Git to $GIT_DIR..." -ForegroundColor Yellow
+New-Item -ItemType Directory -Force -Path $GIT_DIR | Out-Null
+Start-Process -FilePath "git-portable.7z.exe" -ArgumentList "-o$GIT_DIR", "-y" -Wait
+
+# Cleanup
+Remove-Item "git-portable.7z.exe"
+
+Write-Host "Git installation completed!" -ForegroundColor Green
