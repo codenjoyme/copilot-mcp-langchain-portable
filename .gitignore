@@ -1,2 +1,3 @@
-launch-vscode.bat
 tools/
+launch-vscode.bat
+launch-vscode.sh

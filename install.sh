@@ -3,102 +3,135 @@
 # Load environment variables
 source .env
 
-echo "Starting installation process..."
+# Clear screen for better visibility
+clear
+
+# Color definitions for better output
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+BLUE='\033[0;34m'
+MAGENTA='\033[0;35m'
+CYAN='\033[0;36m'
+WHITE='\033[1;37m'
+GRAY='\033[0;37m'
+NC='\033[0m' # No Color
+
+# Beautiful header
+echo -e "${MAGENTA}════════════════════════════════════════════════════════════════${NC}"
+echo -e "${CYAN}PORTABLE DEVELOPMENT ENVIRONMENT INSTALLER${NC}"
+echo -e "${MAGENTA}════════════════════════════════════════════════════════════════${NC}"
+echo ""
+echo -e "${WHITE}This installer will set up:${NC}"
+echo -e "${GRAY}   - VSCode (Portable)${NC}"
+echo -e "${GRAY}   - Git (Portable)${NC}"
+echo -e "${GRAY}   - Python (Embeddable)${NC}"
+echo -e "${GRAY}   - LangChain Project${NC}"
+echo ""
+echo -e "${GREEN}Starting installation process...${NC}"
+echo ""
 
 # Create tools directory
 mkdir -p tools
 
-# -----------------------------------------------------
-# Download and install VSCode
+# ═══════════════════════════════════════════════════════════════
+# STEP 1: VSCode Installation
+# ═══════════════════════════════════════════════════════════════
 if [ -f "$VSCODE_DIR/Code.exe" ]; then
-    echo "VSCode already installed, skipping..."
+    echo -e "${CYAN}VSCode already installed, skipping...${NC}"
 else
-    echo "Downloading VSCode..."
+    echo -e "${YELLOW}Downloading VSCode...${NC}"
     if command -v curl &> /dev/null; then
         curl -L -o vscode.zip "$VSCODE_URL"
     elif command -v wget &> /dev/null; then
         wget -O vscode.zip "$VSCODE_URL"
     else
-        echo "Error: Neither curl nor wget found. Please install one of them."
+        echo -e "${RED}Error: Neither curl nor wget found. Please install one of them.${NC}"
         exit 1
     fi
 
-    echo "Extracting VSCode to $VSCODE_DIR..."
+    echo -e "${YELLOW}Extracting VSCode to $VSCODE_DIR...${NC}"
     mkdir -p "$VSCODE_DIR"
     if command -v unzip &> /dev/null; then
         unzip -q vscode.zip -d "$VSCODE_DIR"
     else
-        echo "Error: unzip command not found. Please install unzip."
+        echo -e "${RED}Error: unzip command not found. Please install unzip.${NC}"
         exit 1
     fi
 
     # Cleanup
     rm vscode.zip
 
-    echo "VSCode installation completed!"
+    echo -e "${GREEN}VSCode installation completed!${NC}"
 fi
+echo ""
 
-# -----------------------------------------------------
-# Download and install Git
+# ═══════════════════════════════════════════════════════════════
+# STEP 2: Git Installation
+# ═══════════════════════════════════════════════════════════════
 if [ -f "$GIT_DIR/bin/git.exe" ]; then
-    echo "Git already installed, skipping..."
+    echo -e "${CYAN}Git already installed, skipping...${NC}"
 else
-    echo "Downloading Portable Git..."
+    echo -e "${YELLOW}Downloading Portable Git...${NC}"
     if command -v curl &> /dev/null; then
         curl -L -o git-portable.7z.exe "$GIT_URL"
     elif command -v wget &> /dev/null; then
         wget -O git-portable.7z.exe "$GIT_URL"
     else
-        echo "Error: Neither curl nor wget found. Please install one of them."
+        echo -e "${RED}Error: Neither curl nor wget found. Please install one of them.${NC}"
         exit 1
     fi
 
-    echo "Extracting Git to $GIT_DIR..."
+    echo -e "${YELLOW}Extracting Git to $GIT_DIR...${NC}"
     mkdir -p "$GIT_DIR"
     ./git-portable.7z.exe -o"$GIT_DIR" -y
 
     # Cleanup
     rm git-portable.7z.exe
 
-    echo "Git installation completed!"
+    echo -e "${GREEN}Git installation completed!${NC}"
 fi
+echo ""
 
-# -----------------------------------------------------
-# Download and install Python
+# ═══════════════════════════════════════════════════════════════
+# STEP 3: Python Installation
+# ═══════════════════════════════════════════════════════════════
 if [ -f "$PYTHON_DIR/python.exe" ]; then
-    echo "Python already installed, skipping..."
+    echo -e "${CYAN}Python already installed, skipping...${NC}"
 else
-    echo "Downloading Python embeddable..."
+    echo -e "${YELLOW}Downloading Python embeddable...${NC}"
     if command -v curl &> /dev/null; then
         curl -L -o python-embed.zip "$PYTHON_URL"
     elif command -v wget &> /dev/null; then
         wget -O python-embed.zip "$PYTHON_URL"
     else
-        echo "Error: Neither curl nor wget found. Please install one of them."
+        echo -e "${RED}Error: Neither curl nor wget found. Please install one of them.${NC}"
         exit 1
     fi
 
-    echo "Extracting Python to $PYTHON_DIR..."
+    echo -e "${YELLOW}Extracting Python to $PYTHON_DIR...${NC}"
     mkdir -p "$PYTHON_DIR"
     if command -v unzip &> /dev/null; then
         unzip -q python-embed.zip -d "$PYTHON_DIR"
     else
-        echo "Error: unzip command not found. Please install unzip."
+        echo -e "${RED}Error: unzip command not found. Please install unzip.${NC}"
         exit 1
     fi
 
     # Cleanup
     rm python-embed.zip
 
-    echo "Python installation completed!"
+    echo -e "${GREEN}Python installation completed!${NC}"
 fi
+echo ""
 
-# -----------------------------------------------------
-# Setup pip for embeddable Python
+# ═══════════════════════════════════════════════════════════════
+# STEP 4: Pip Setup
+# ═══════════════════════════════════════════════════════════════
 if [ -f "$PYTHON_DIR/Scripts/pip.exe" ]; then
-    echo "Pip already installed, skipping..."
+    echo -e "${CYAN}Pip already installed, skipping...${NC}"
 else
-    echo "Setting up pip for Python..."
+    echo -e "${YELLOW}Setting up pip for Python...${NC}"
 
     # Download get-pip.py
     if command -v curl &> /dev/null; then
@@ -106,7 +139,7 @@ else
     elif command -v wget &> /dev/null; then
         wget -O get-pip.py "$GET_PIP_URL"
     else
-        echo "Error: Neither curl nor wget found. Please install one of them."
+        echo -e "${RED}Error: Neither curl nor wget found. Please install one of them.${NC}"
         exit 1
     fi
 
@@ -128,28 +161,47 @@ EOF
     # Cleanup
     rm get-pip.py
 
-    echo "Pip setup completed!"
+    echo -e "${GREEN}Pip setup completed!${NC}"
 fi
+echo ""
 
-# -----------------------------------------------------
-# Clone project repository
-if [ -d "$PROJECT_DIR/.git" ]; then
-    echo "Project already cloned, skipping..."
+# ═══════════════════════════════════════════════════════════════
+# STEP 5: Virtual Environment Setup
+# ═══════════════════════════════════════════════════════════════
+if [ -f "$PYTHON_DIR/Scripts/virtualenv.exe" ]; then
+    echo -e "${CYAN}Virtualenv already installed, skipping...${NC}"
 else
-    echo "Cloning project repository..."
+    echo -e "${YELLOW}Installing virtualenv package...${NC}"
+    
+    # Install virtualenv using pip
+    ./"$PYTHON_DIR"/python.exe -m pip install virtualenv
+    
+    echo -e "${GREEN}Virtualenv installation completed!${NC}"
+fi
+echo ""
+
+# ═══════════════════════════════════════════════════════════════
+# STEP 6: Project Repository
+# ═══════════════════════════════════════════════════════════════
+if [ -d "$PROJECT_DIR/.git" ]; then
+    echo -e "${CYAN}Project already cloned, skipping...${NC}"
+else
+    echo -e "${YELLOW}Cloning project repository...${NC}"
 
     # Clone the project using portable Git
     ./"$GIT_DIR"/bin/git.exe clone "$PROJECT_REPO" "$PROJECT_DIR"
 
-    echo "Project cloning completed!"
+    echo -e "${GREEN}Project cloning completed!${NC}"
 fi
+echo ""
 
-# -----------------------------------------------------
-# Run project installation script
-if [ -d "$PROJECT_DIR/venv" ]; then
-    echo "Project environment already set up, skipping..."
+# ═══════════════════════════════════════════════════════════════
+# STEP 7: Project Environment Setup
+# ═══════════════════════════════════════════════════════════════
+if [ -d "$PROJECT_DIR/.virtualenv" ]; then
+    echo -e "${CYAN}Project environment already set up, skipping...${NC}"
 else
-    echo "Setting up project environment..."
+    echo -e "${YELLOW}Setting up project environment...${NC}"
 
     # Navigate to project directory and run install.sh
     cd "$PROJECT_DIR"
@@ -163,26 +215,55 @@ else
     # Return to original directory
     cd ..
 
-    echo "Project environment setup completed!"
-fi
-
-# -----------------------------------------------------
-# Create VSCode launcher with portable tools
-if [ -f "launch-vscode.bat" ]; then
-    echo "VSCode launcher already exists, skipping..."
-else
-    echo "Creating VSCode launcher..."
-
-    currentDir=$(pwd | sed 's|^/c/|C:/|' | tr '/' '\\')
-    cat > launch-vscode.bat << EOF
-@echo off
-REM VSCode launcher with portable tools
-set PATH=$currentDir\\$GIT_DIR\\bin;$currentDir\\$PYTHON_DIR;$currentDir\\$PYTHON_DIR\\Scripts;%PATH%
-start "" "$currentDir\\$VSCODE_DIR\\Code.exe" "$currentDir\\$PROJECT_DIR"
-EOF
-
-    echo "VSCode launcher created!"
+    echo -e "${GREEN}Project environment setup completed!${NC}"
 fi
 echo ""
-echo "Setup completed!"
-echo "To start coding, run: ./launch-vscode.bat"
+
+# ═══════════════════════════════════════════════════════════════
+# STEP 8: VSCode Launcher Creation
+# ═══════════════════════════════════════════════════════════════
+if [ -f "launch-vscode.sh" ]; then
+    echo -e "${CYAN}VSCode launcher already exists, skipping...${NC}"
+else
+    echo -e "${YELLOW}Creating VSCode launcher...${NC}"
+
+    currentDir=$(pwd | sed 's|^/c/|C:/|' | tr '/' '\\')
+    # Replace Windows launcher with Bash launcher
+    cat > launch-vscode.sh << EOF
+#!/bin/bash
+# VSCode launcher with portable tools
+export PATH="$currentDir/$GIT_DIR/bin:$currentDir/$PYTHON_DIR:$currentDir/$PYTHON_DIR/Scripts:$PATH"
+"$currentDir/$VSCODE_DIR/Code.exe" "$currentDir/$PROJECT_DIR"
+EOF
+
+    chmod +x launch-vscode.sh
+
+    echo -e "${GREEN}VSCode Bash launcher created!${NC}"
+fi
+echo ""
+
+# ════════════════════════════════════════════════════════════════
+# INSTALLATION COMPLETED!
+# ════════════════════════════════════════════════════════════════
+echo -e "${GREEN}Setup completed successfully!${NC}"
+echo ""
+echo -e "${CYAN}To start coding, run:${NC}"
+echo -e "${WHITE}   ./launch-vscode.sh${NC}"
+echo ""
+echo -e "${YELLOW}Your portable development environment includes:${NC}"
+echo -e "${GRAY}   - VSCode with extensions${NC}"
+echo -e "${GRAY}   - Git version control${NC}"
+echo -e "${GRAY}   - Python with LangChain${NC}"
+echo -e "${GRAY}   - Hello-LangChain project${NC}"
+echo ""
+echo -e "${MAGENTA}Happy coding!${NC}"
+
+# ════════════════════════════════════════════════════════════════
+# Running the VSCode launcher
+# ════════════════════════════════════════════════════════════════
+if [ -f "launch-vscode.sh" ]; then
+    echo -e "${CYAN}VSCode launcher found, running...${NC}"
+    ./launch-vscode.sh
+else
+    echo -e "${RED}VSCode launcher not found! Please ensure the launcher is created.${NC}"
+fi

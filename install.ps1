@@ -5,13 +5,29 @@ Get-Content ".env" | ForEach-Object {
     }
 }
 
+# Clear screen for better visibility
+Clear-Host
+
+# Beautiful header
+Write-Host "=====================================================================" -ForegroundColor Magenta
+Write-Host "PORTABLE DEVELOPMENT ENVIRONMENT INSTALLER" -ForegroundColor Cyan
+Write-Host "=====================================================================" -ForegroundColor Magenta
+Write-Host ""
+Write-Host "This installer will set up:" -ForegroundColor White
+Write-Host "   - VSCode (Portable)" -ForegroundColor Gray
+Write-Host "   - Git (Portable)" -ForegroundColor Gray
+Write-Host "   - Python (Embeddable)" -ForegroundColor Gray
+Write-Host "   - LangChain Project" -ForegroundColor Gray
+Write-Host ""
 Write-Host "Starting installation process..." -ForegroundColor Green
+Write-Host ""
 
 # Create tools directory
 New-Item -ItemType Directory -Force -Path "tools" | Out-Null
 
-# -----------------------------------------------------
-# Download and install VSCode
+# ═══════════════════════════════════════════════════════════════
+# STEP 1: VSCode Installation
+# ═══════════════════════════════════════════════════════════════
 if (Test-Path "$VSCODE_DIR\Code.exe") {
     Write-Host "VSCode already installed, skipping..." -ForegroundColor Cyan
 } else {
@@ -27,9 +43,11 @@ if (Test-Path "$VSCODE_DIR\Code.exe") {
 
     Write-Host "VSCode installation completed!" -ForegroundColor Green
 }
+Write-Host ""
 
-# -----------------------------------------------------
-# Download and install Git
+# ═══════════════════════════════════════════════════════════════
+# STEP 2: Git Installation
+# ═══════════════════════════════════════════════════════════════
 if (Test-Path "$GIT_DIR\bin\git.exe") {
     Write-Host "Git already installed, skipping..." -ForegroundColor Cyan
 } else {
@@ -45,9 +63,11 @@ if (Test-Path "$GIT_DIR\bin\git.exe") {
 
     Write-Host "Git installation completed!" -ForegroundColor Green
 }
+Write-Host ""
 
-# -----------------------------------------------------
-# Download and install Python
+# ═══════════════════════════════════════════════════════════════
+# STEP 3: Python Installation
+# ═══════════════════════════════════════════════════════════════
 if (Test-Path "$PYTHON_DIR\python.exe") {
     Write-Host "Python already installed, skipping..." -ForegroundColor Cyan
 } else {
@@ -63,9 +83,11 @@ if (Test-Path "$PYTHON_DIR\python.exe") {
 
     Write-Host "Python installation completed!" -ForegroundColor Green
 }
+Write-Host ""
 
-# -----------------------------------------------------
-# Setup pip for embeddable Python
+# ═══════════════════════════════════════════════════════════════
+# STEP 4: Pip Setup
+# ═══════════════════════════════════════════════════════════════
 if (Test-Path "$PYTHON_DIR\Scripts\pip.exe") {
     Write-Host "Pip already installed, skipping..." -ForegroundColor Cyan
 } else {
@@ -95,61 +117,105 @@ import site
 
     Write-Host "Pip setup completed!" -ForegroundColor Green
 }
+Write-Host ""
 
-# -----------------------------------------------------
-# Clone project repository
+# ═══════════════════════════════════════════════════════════════
+# STEP 5: Virtual Environment Setup  
+# ═══════════════════════════════════════════════════════════════
+if (Test-Path "$PYTHON_DIR\Scripts\virtualenv.exe") {
+    Write-Host "Virtualenv already installed, skipping..." -ForegroundColor Cyan
+} else {
+    Write-Host "Installing virtualenv package..." -ForegroundColor Yellow
+    
+    # Install virtualenv using pip
+    & ".\$PYTHON_DIR\python.exe" -m pip install virtualenv
+    
+    Write-Host "Virtualenv installation completed!" -ForegroundColor Green
+}
+Write-Host ""
+
+# ═══════════════════════════════════════════════════════════════
+# STEP 6: Project Repository
+# ═══════════════════════════════════════════════════════════════
 if (Test-Path "$PROJECT_DIR\.git") {
     Write-Host "Project already cloned, skipping..." -ForegroundColor Cyan
-} else {
+} else {    
     Write-Host "Cloning project repository..." -ForegroundColor Yellow
 
     # Set up Git environment
-    $env:PATH = ".\$GIT_DIR\bin;$env:PATH"
+    $env:PATH = ".\" + $GIT_DIR + "\bin;" + $env:PATH
 
     # Clone the project
     & ".\$GIT_DIR\bin\git.exe" clone $PROJECT_REPO $PROJECT_DIR
 
     Write-Host "Project cloning completed!" -ForegroundColor Green
 }
+Write-Host ""
 
-# -----------------------------------------------------
-# Run project installation script
-if (Test-Path "$PROJECT_DIR\venv") {
+# ═══════════════════════════════════════════════════════════════
+# STEP 7: Project Environment Setup
+# ═══════════════════════════════════════════════════════════════
+if (Test-Path "$PROJECT_DIR\.virtualenv") {
     Write-Host "Project environment already set up, skipping..." -ForegroundColor Cyan
 } else {
     Write-Host "Setting up project environment..." -ForegroundColor Yellow
 
     # Navigate to project directory and run install.sh
-    Push-Location $PROJECT_DIR
-
-    # Run install.sh using our portable tools
-    $env:PATH = "..\$GIT_DIR\bin;..\$PYTHON_DIR;..\$PYTHON_DIR\Scripts;$env:PATH"
-    & "..\$GIT_DIR\bin\bash.exe" "./install.sh"
+    Push-Location $PROJECT_DIR    # Run install.sh using our portable tools
+    $env:PATH = "..\" + $GIT_DIR + "\bin;..\" + $PYTHON_DIR + ";..\" + $PYTHON_DIR + "\Scripts;" + $env:PATH
+    & ("..\" + $GIT_DIR + "\bin\bash.exe") "./install.sh"
 
     # Return to original directory
     Pop-Location
 
     Write-Host "Project environment setup completed!" -ForegroundColor Green
 }
+Write-Host ""
 
-# -----------------------------------------------------
-# Create VSCode launcher with portable tools
+# ═══════════════════════════════════════════════════════════════
+# STEP 8: VSCode Launcher Creation
+# ═══════════════════════════════════════════════════════════════
 if (Test-Path "launch-vscode.bat") {
     Write-Host "VSCode launcher already exists, skipping..." -ForegroundColor Cyan
-} else {
+} else {    
     Write-Host "Creating VSCode launcher..." -ForegroundColor Yellow
 
     $currentDir = (Get-Location).Path -replace '/', '\'
     $launcherContent = @"
 @echo off
 REM VSCode launcher with portable tools
-set PATH=$currentDir\$GIT_DIR\bin;$currentDir\$PYTHON_DIR;$currentDir\$PYTHON_DIR\Scripts;%PATH%
-start "" "$currentDir\$VSCODE_DIR\Code.exe" "$currentDir\$PROJECT_DIR"
+set PATH=$currentDir\$($GIT_DIR)\bin;$currentDir\$($PYTHON_DIR);$currentDir\$($PYTHON_DIR)\Scripts;%PATH%
+start "" "$currentDir\$($VSCODE_DIR)\Code.exe" "$currentDir\$($PROJECT_DIR)"
 "@
     Set-Content -Path "launch-vscode.bat" -Value $launcherContent
 
     Write-Host "VSCode launcher created!" -ForegroundColor Green
 }
 Write-Host ""
-Write-Host "Setup completed!" -ForegroundColor Cyan
-Write-Host "To start coding, run: .\launch-vscode.bat" -ForegroundColor White
+
+# =====================================================================
+# INSTALLATION COMPLETED!
+# =====================================================================
+Write-Host "Setup completed successfully!" -ForegroundColor Green
+Write-Host ""
+Write-Host "To start coding, run:" -ForegroundColor Cyan
+Write-Host "   .\launch-vscode.bat" -ForegroundColor White
+Write-Host ""
+Write-Host "Your portable development environment includes:" -ForegroundColor Yellow
+Write-Host "   - VSCode with extensions" -ForegroundColor Gray
+Write-Host "   - Git version control" -ForegroundColor Gray
+Write-Host "   - Python with LangChain" -ForegroundColor Gray
+Write-Host "   - Hello-LangChain project" -ForegroundColor Gray
+Write-Host ""
+Write-Host "Happy coding!" -ForegroundColor Magenta
+
+# =====================================================================
+# RUNNUNG THE VSCODE LAUNCHER
+# =====================================================================
+
+if (Test-Path "launch-vscode.bat") {
+    Write-Host "Running VSCode launcher..." -ForegroundColor Yellow
+    Start-Process -FilePath ".\launch-vscode.bat"
+} else {
+    Write-Host "VSCode launcher not found, please run 'launch-vscode.bat' manually." -ForegroundColor Red
+}
