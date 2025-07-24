@@ -79,3 +79,15 @@ Set-Content -Path $pythonPthFile -Value $newContent
 Remove-Item "get-pip.py"
 
 Write-Host "Pip setup completed!" -ForegroundColor Green
+
+# -----------------------------------------------------
+# Clone project repository
+Write-Host "Cloning project repository..." -ForegroundColor Yellow
+
+# Set up Git environment
+$env:PATH = ".\$GIT_DIR\bin;$env:PATH"
+
+# Clone the project
+& ".\$GIT_DIR\bin\git.exe" clone $PROJECT_REPO $PROJECT_DIR
+
+Write-Host "Project cloning completed!" -ForegroundColor Green

@@ -116,23 +116,10 @@ rm get-pip.py
 echo "Pip setup completed!"
 
 # -----------------------------------------------------
-# Setup pip for embeddable Python
-echo "Setting up pip for Python..."
+# Clone project repository
+echo "Cloning project repository..."
 
-# Download get-pip.py
-if command -v curl &> /dev/null; then
-    curl -L -o get-pip.py "$GET_PIP_URL"
-elif command -v wget &> /dev/null; then
-    wget -O get-pip.py "$GET_PIP_URL"
-else
-    echo "Error: Neither curl nor wget found. Please install one of them."
-    exit 1
-fi
+# Clone the project using portable Git
+./"$GIT_DIR"/bin/git.exe clone "$PROJECT_REPO" "$PROJECT_DIR"
 
-# Install pip
-./"$PYTHON_DIR"/python.exe get-pip.py
-
-# Cleanup
-rm get-pip.py
-
-echo "Pip setup completed!"
+echo "Project cloning completed!"
