@@ -62,6 +62,19 @@ Invoke-WebRequest -Uri $GET_PIP_URL -OutFile "get-pip.py"
 # Install pip
 & ".\$PYTHON_DIR\python.exe" "get-pip.py"
 
+# Fix Python paths configuration
+$pythonPthFile = "$PYTHON_DIR\python313._pth"
+$newContent = @"
+python313.zip
+.
+Lib\site-packages
+Scripts
+
+# Uncomment to run site.main() automatically
+import site
+"@
+Set-Content -Path $pythonPthFile -Value $newContent
+
 # Cleanup
 Remove-Item "get-pip.py"
 
