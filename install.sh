@@ -125,6 +125,24 @@ echo "Cloning project repository..."
 echo "Project cloning completed!"
 
 # -----------------------------------------------------
+# Run project installation script
+echo "Setting up project environment..."
+
+# Navigate to project directory and run install.sh
+cd "$PROJECT_DIR"
+
+# Set up environment with our portable tools
+export PATH="../$GIT_DIR/bin:../$PYTHON_DIR:../$PYTHON_DIR/Scripts:$PATH"
+
+# Run install.sh using bash
+bash ./install.sh
+
+# Return to original directory
+cd ..
+
+echo "Project environment setup completed!"
+
+# -----------------------------------------------------
 # Create VSCode launcher with portable tools
 echo "Creating VSCode launcher..."
 

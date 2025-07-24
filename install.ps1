@@ -93,6 +93,22 @@ $env:PATH = ".\$GIT_DIR\bin;$env:PATH"
 Write-Host "Project cloning completed!" -ForegroundColor Green
 
 # -----------------------------------------------------
+# Run project installation script
+Write-Host "Setting up project environment..." -ForegroundColor Yellow
+
+# Navigate to project directory and run install.sh
+Push-Location $PROJECT_DIR
+
+# Run install.sh using our portable tools
+$env:PATH = "..\$GIT_DIR\bin;..\$PYTHON_DIR;..\$PYTHON_DIR\Scripts;$env:PATH"
+& "..\$GIT_DIR\bin\bash.exe" "./install.sh"
+
+# Return to original directory
+Pop-Location
+
+Write-Host "Project environment setup completed!" -ForegroundColor Green
+
+# -----------------------------------------------------
 # Create VSCode launcher with portable tools
 Write-Host "Creating VSCode launcher..." -ForegroundColor Yellow
 
