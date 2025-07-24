@@ -123,3 +123,20 @@ echo "Cloning project repository..."
 ./"$GIT_DIR"/bin/git.exe clone "$PROJECT_REPO" "$PROJECT_DIR"
 
 echo "Project cloning completed!"
+
+# -----------------------------------------------------
+# Create VSCode launcher with portable tools
+echo "Creating VSCode launcher..."
+
+currentDir=$(pwd | sed 's|^/c/|C:/|' | tr '/' '\\')
+cat > launch-vscode.bat << EOF
+@echo off
+REM VSCode launcher with portable tools
+set PATH=$currentDir\\$GIT_DIR\\bin;$currentDir\\$PYTHON_DIR;$currentDir\\$PYTHON_DIR\\Scripts;%PATH%
+start "" "$currentDir\\$VSCODE_DIR\\Code.exe" "$currentDir\\$PROJECT_DIR"
+EOF
+
+echo "VSCode launcher created!"
+echo ""
+echo "Setup completed!"
+echo "To start coding, run: ./launch-vscode.bat"

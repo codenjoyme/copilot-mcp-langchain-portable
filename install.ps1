@@ -91,3 +91,21 @@ $env:PATH = ".\$GIT_DIR\bin;$env:PATH"
 & ".\$GIT_DIR\bin\git.exe" clone $PROJECT_REPO $PROJECT_DIR
 
 Write-Host "Project cloning completed!" -ForegroundColor Green
+
+# -----------------------------------------------------
+# Create VSCode launcher with portable tools
+Write-Host "Creating VSCode launcher..." -ForegroundColor Yellow
+
+$currentDir = (Get-Location).Path -replace '/', '\'
+$launcherContent = @"
+@echo off
+REM VSCode launcher with portable tools
+set PATH=$currentDir\$GIT_DIR\bin;$currentDir\$PYTHON_DIR;$currentDir\$PYTHON_DIR\Scripts;%PATH%
+start "" "$currentDir\$VSCODE_DIR\Code.exe" "$currentDir\$PROJECT_DIR"
+"@
+Set-Content -Path "launch-vscode.bat" -Value $launcherContent
+
+Write-Host "VSCode launcher created!" -ForegroundColor Green
+Write-Host ""
+Write-Host "Setup completed!" -ForegroundColor Cyan
+Write-Host "To start coding, run: .\launch-vscode.bat" -ForegroundColor White
