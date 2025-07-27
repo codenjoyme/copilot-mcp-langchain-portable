@@ -19,7 +19,6 @@ $work = "workspace"; $url = "https://github.com/codenjoyme/copilot-mcp-langchain
 ## Project Structure
 - `install.ps1`: PowerShell script for installation.
 - `install.sh`: Bash script for installation.
-- `pull.sh`: Bash script for downloading and setting up the project.
 - `readme.md`: Documentation for the project.
 
 ## Notes
