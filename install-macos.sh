@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Load environment variables from .env file (Linux/Unix specific)
+# Load environment variables from .env file
 while IFS='=' read -r key value || [ -n "$key" ]; do
     # Skip comments and empty lines
     if [[ $key =~ ^[[:space:]]*# ]] || [[ -z "$key" ]]; then
@@ -10,14 +10,7 @@ while IFS='=' read -r key value || [ -n "$key" ]; do
     key=$(echo "$key" | xargs)
     value=$(echo "$value" | xargs)
     if [[ -n "$key" && -n "$value" ]]; then
-        # Use Linux-specific variables
-        if [[ "$key" == *"_WINDOWS" ]]; then
-            continue
-        elif [[ "$key" == *"_MACOS" ]]; then
-            continue
-        else
-            export "$key"="$value"
-        fi
+        export "$key"="$value"
     fi
 done < .env
 
@@ -40,16 +33,16 @@ NC='\033[0m' # No Color
 
 # Beautiful header
 echo -e "${MAGENTA}════════════════════════════════════════════════════════════════${NC}"
-echo -e "${CYAN}PORTABLE DEVELOPMENT ENVIRONMENT INSTALLER (Linux/Unix)${NC}"
+echo -e "${CYAN}PORTABLE DEVELOPMENT ENVIRONMENT INSTALLER (macOS)${NC}"
 echo -e "${MAGENTA}════════════════════════════════════════════════════════════════${NC}"
 echo ""
 echo -e "${WHITE}This installer will set up:${NC}"
-echo -e "${GRAY}   - VSCode (Linux)${NC}"
-echo -e "${GRAY}   - Git (System/Package Manager)${NC}"
-echo -e "${GRAY}   - Python (System/Package Manager)${NC}"
+echo -e "${GRAY}   - VSCode (Portable)${NC}"
+echo -e "${GRAY}   - Git (System)${NC}"
+echo -e "${GRAY}   - Python (System/Homebrew)${NC}"
 echo -e "${GRAY}   - LangChain Project${NC}"
 echo ""
-echo -e "${GREEN}Starting Linux/Unix installation process...${NC}"
+echo -e "${GREEN}Starting macOS installation process...${NC}"
 echo ""
 
 # Create tools directory
@@ -58,26 +51,37 @@ mkdir -p tools
 # ═══════════════════════════════════════════════════════════════
 # STEP 1: VSCode Installation
 # ═══════════════════════════════════════════════════════════════
-VSCODE_BINARY="$VSCODE_DIR/code"
-if [ -f "$VSCODE_BINARY" ] || [ -f "$VSCODE_DIR/VSCode-linux-x64/code" ]; then
+if [ -d "$VSCODE_DIR/Visual Studio Code.app" ]; then
     echo -e "${CYAN}VSCode already installed, skipping...${NC}"
 else
-    echo -e "${YELLOW}VSCode installation for Linux requires manual download...${NC}"
-    echo -e "${YELLOW}Please download VSCode from: https://code.visualstudio.com/download${NC}"
-    echo -e "${YELLOW}Choose the appropriate Linux package (.deb, .rpm, or .tar.gz)${NC}"
-    echo -e "${YELLOW}For portable installation, download the .tar.gz version${NC}"
-    echo ""
-    echo -e "${CYAN}Alternatively, install via package manager:${NC}"
-    echo -e "${GRAY}  Ubuntu/Debian: sudo apt install code${NC}"
-    echo -e "${GRAY}  Fedora/RHEL:   sudo dnf install code${NC}"
-    echo -e "${GRAY}  Arch Linux:    sudo pacman -S code${NC}"
-    echo ""
-    read -p "Press Enter to continue after installing VSCode..."
+    echo -e "${YELLOW}Downloading VSCode for macOS...${NC}"
+    if command -v curl &> /dev/null; then
+        curl -L -o vscode-macos.zip "$VSCODE_URL_MACOS"
+    elif command -v wget &> /dev/null; then
+        wget -O vscode-macos.zip "$VSCODE_URL_MACOS"
+    else
+        echo -e "${RED}Error: Neither curl nor wget found. Please install one of them.${NC}"
+        exit 1
+    fi
+
+    echo -e "${YELLOW}Extracting VSCode to $VSCODE_DIR...${NC}"
+    mkdir -p "$VSCODE_DIR"
+    if command -v unzip &> /dev/null; then
+        unzip -q vscode-macos.zip -d "$VSCODE_DIR"
+    else
+        echo -e "${RED}Error: unzip command not found. Please install unzip.${NC}"
+        exit 1
+    fi
+
+    # Cleanup
+    rm vscode-macos.zip
+
+    echo -e "${GREEN}VSCode installation completed!${NC}"
 fi
 echo ""
 
 # ═══════════════════════════════════════════════════════════════
-# STEP 2: Git Setup
+# STEP 2: Git Setup (System Git)
 # ═══════════════════════════════════════════════════════════════
 if command -v git &> /dev/null; then
     echo -e "${CYAN}Git found in system, using system Git...${NC}"
@@ -86,22 +90,20 @@ if command -v git &> /dev/null; then
 else
     echo -e "${YELLOW}Git not found. Installing Git...${NC}"
     
-    # Check for package managers and install Git
-    if command -v apt &> /dev/null; then
-        echo -e "${YELLOW}Installing Git via apt...${NC}"
-        sudo apt update && sudo apt install -y git
-    elif command -v dnf &> /dev/null; then
-        echo -e "${YELLOW}Installing Git via dnf...${NC}"
-        sudo dnf install -y git
-    elif command -v pacman &> /dev/null; then
-        echo -e "${YELLOW}Installing Git via pacman...${NC}"
-        sudo pacman -S --noconfirm git
-    elif command -v zypper &> /dev/null; then
-        echo -e "${YELLOW}Installing Git via zypper...${NC}"
-        sudo zypper install -y git
+    # Check if Homebrew is available
+    if command -v brew &> /dev/null; then
+        echo -e "${YELLOW}Installing Git via Homebrew...${NC}"
+        brew install git
+        GIT_EXECUTABLE=$(which git)
+    # Check if MacPorts is available
+    elif command -v port &> /dev/null; then
+        echo -e "${YELLOW}Installing Git via MacPorts...${NC}"
+        sudo port install git
+        GIT_EXECUTABLE=$(which git)
     else
-        echo -e "${RED}Error: No supported package manager found.${NC}"
-        echo -e "${RED}Please install Git manually for your distribution.${NC}"
+        echo -e "${RED}Error: Git not found and no package manager available.${NC}"
+        echo -e "${RED}Please install Git manually from https://git-scm.com/download/mac${NC}"
+        echo -e "${RED}Or install Homebrew first: https://brew.sh${NC}"
         exit 1
     fi
     
@@ -128,22 +130,20 @@ if command -v python3 &> /dev/null; then
 else
     echo -e "${YELLOW}Python3 not found. Installing Python...${NC}"
     
-    # Check for package managers and install Python
-    if command -v apt &> /dev/null; then
-        echo -e "${YELLOW}Installing Python via apt...${NC}"
-        sudo apt update && sudo apt install -y python3 python3-pip python3-venv
-    elif command -v dnf &> /dev/null; then
-        echo -e "${YELLOW}Installing Python via dnf...${NC}"
-        sudo dnf install -y python3 python3-pip
-    elif command -v pacman &> /dev/null; then
-        echo -e "${YELLOW}Installing Python via pacman...${NC}"
-        sudo pacman -S --noconfirm python python-pip
-    elif command -v zypper &> /dev/null; then
-        echo -e "${YELLOW}Installing Python via zypper...${NC}"
-        sudo zypper install -y python3 python3-pip
+    # Check if Homebrew is available
+    if command -v brew &> /dev/null; then
+        echo -e "${YELLOW}Installing Python via Homebrew...${NC}"
+        brew install python
+        PYTHON_EXECUTABLE=$(which python3)
+    # Check if MacPorts is available
+    elif command -v port &> /dev/null; then
+        echo -e "${YELLOW}Installing Python via MacPorts...${NC}"
+        sudo port install python312
+        PYTHON_EXECUTABLE=$(which python3.12)
     else
-        echo -e "${RED}Error: No supported package manager found.${NC}"
-        echo -e "${RED}Please install Python manually for your distribution.${NC}"
+        echo -e "${RED}Error: Python not found and no package manager available.${NC}"
+        echo -e "${RED}Please install Python manually from https://www.python.org/downloads/mac-osx/${NC}"
+        echo -e "${RED}Or install Homebrew first: https://brew.sh${NC}"
         exit 1
     fi
     
@@ -220,7 +220,7 @@ echo ""
 workspace_folder=$(pwd)
 if [ -f "$PROJECT_DIR/.cursor/mcp.json" ]; then
     echo -e "${YELLOW}Replacing '{workspaceFolder}' in .cursor/mcp.json...${NC}"
-    sed -i "s|{workspaceFolder}|$workspace_folder|g" "$PROJECT_DIR/.cursor/mcp.json"
+    sed -i '' "s|{workspaceFolder}|$workspace_folder|g" "$PROJECT_DIR/.cursor/mcp.json"
     echo -e "${GREEN}Replacement completed!${NC}"
 else
     echo -e "${RED}.cursor/mcp.json not found! Skipping replacement.${NC}"
@@ -248,72 +248,53 @@ fi
 echo ""
 
 # ═══════════════════════════════════════════════════════════════
-# STEP 9: Linux VSCode Launcher Creation
+# STEP 9: macOS VSCode Launcher Creation
 # ═══════════════════════════════════════════════════════════════
-if [ -f "launch-vscode-linux.sh" ]; then
-    echo -e "${CYAN}Linux VSCode launcher already exists, skipping...${NC}"
+if [ -f "launch-vscode-macos.sh" ]; then
+    echo -e "${CYAN}macOS VSCode launcher already exists, skipping...${NC}"
 else
-    echo -e "${YELLOW}Creating Linux VSCode launcher...${NC}"
+    echo -e "${YELLOW}Creating macOS VSCode launcher...${NC}"
 
     currentDir=$(pwd)
-    # Create Linux launcher script
-    cat > launch-vscode-linux.sh << EOF
+    # Create macOS launcher script
+    cat > launch-vscode-macos.sh << EOF
 #!/bin/bash
-# VSCode launcher for Linux with environment setup
+# VSCode launcher for macOS with portable tools
+export PATH="$currentDir/tools/git/bin:$currentDir/tools/python:$PATH"
 
-# Add local tools to PATH if they exist
-if [ -d "$currentDir/tools/git/bin" ]; then
-    export PATH="$currentDir/tools/git/bin:\$PATH"
-fi
-if [ -d "$currentDir/tools/python" ]; then
-    export PATH="$currentDir/tools/python:\$PATH"
-fi
-
-# Try to find VSCode binary
-if [ -f "$currentDir/$VSCODE_DIR/code" ]; then
-    VSCODE_BINARY="$currentDir/$VSCODE_DIR/code"
-elif [ -f "$currentDir/$VSCODE_DIR/VSCode-linux-x64/code" ]; then
-    VSCODE_BINARY="$currentDir/$VSCODE_DIR/VSCode-linux-x64/code"
-elif command -v code &> /dev/null; then
-    VSCODE_BINARY="code"
-else
-    echo "Error: VSCode not found. Please install VSCode first."
-    exit 1
-fi
-
-# Launch VSCode
-"\$VSCODE_BINARY" --user-data-dir="$currentDir/$VSCODE_USER_DATA_DIR" "$currentDir/$PROJECT_DIR"
+# Launch VSCode app bundle
+open "$currentDir/$VSCODE_DIR/Visual Studio Code.app" --args --user-data-dir="$currentDir/$VSCODE_USER_DATA_DIR" "$currentDir/$PROJECT_DIR"
 EOF
 
-    chmod +x launch-vscode-linux.sh
+    chmod +x launch-vscode-macos.sh
 
-    echo -e "${GREEN}Linux VSCode launcher created!${NC}"
+    echo -e "${GREEN}macOS VSCode launcher created!${NC}"
 fi
 echo ""
 
 # ════════════════════════════════════════════════════════════════
 # INSTALLATION COMPLETED!
 # ════════════════════════════════════════════════════════════════
-echo -e "${GREEN}Linux/Unix setup completed successfully!${NC}"
+echo -e "${GREEN}macOS setup completed successfully!${NC}"
 echo ""
 echo -e "${CYAN}To start coding, run:${NC}"
-echo -e "${WHITE}   ./launch-vscode-linux.sh${NC}"
+echo -e "${WHITE}   ./launch-vscode-macos.sh${NC}"
 echo ""
-echo -e "${YELLOW}Your development environment includes:${NC}"
+echo -e "${YELLOW}Your portable development environment includes:${NC}"
 echo -e "${GRAY}   - VSCode with extensions${NC}"
 echo -e "${GRAY}   - Git version control${NC}"
 echo -e "${GRAY}   - Python with LangChain${NC}"
 echo -e "${GRAY}   - Hello-LangChain project${NC}"
 echo ""
-echo -e "${MAGENTA}Happy coding on Linux!${NC}"
+echo -e "${MAGENTA}Happy coding on macOS!${NC}"
 echo ""
 
 # ════════════════════════════════════════════════════════════════
 # Running the VSCode launcher
 # ════════════════════════════════════════════════════════════════
-if [ -f "launch-vscode-linux.sh" ]; then
+if [ -f "launch-vscode-macos.sh" ]; then
     echo -e "${CYAN}VSCode launcher found, running...${NC}"
-    ./launch-vscode-linux.sh
+    ./launch-vscode-macos.sh
 else
     echo -e "${RED}VSCode launcher not found! Please ensure the launcher is created.${NC}"
-fi
+fi 
