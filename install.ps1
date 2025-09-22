@@ -181,7 +181,7 @@ if (Test-Path "$PROJECT_DIR\.virtualenv") {
     # Navigate to project directory and run install.sh
     Push-Location $PROJECT_DIR    # Run install.sh using our portable tools
     $env:PATH = "..\" + $GIT_DIR + "\bin;..\" + $PYTHON_DIR + ";..\" + $PYTHON_DIR + "\Scripts;" + $env:PATH
-    & ("..\" + $GIT_DIR + "\bin\bash.exe") "./install.sh"
+    & ("..\" + $GIT_DIR + "\bin\bash.exe") "./mcp_server/build/install.sh"
 
     # Return to original directory
     Pop-Location

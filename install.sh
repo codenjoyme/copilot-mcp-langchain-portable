@@ -226,7 +226,7 @@ else
     export PATH="../$GIT_DIR/bin:../$PYTHON_DIR:../$PYTHON_DIR/Scripts:$PATH"
 
     # Run install.sh using bash
-    bash ./install.sh
+    bash ./mcp_server/build/install.sh
 
     # Return to original directory
     cd ..
